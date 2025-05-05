@@ -163,7 +163,7 @@
         parseBtn.addEventListener('click', async () => {
             const url = urlInput.value.trim();
             if (!url) return alert('请输入链接');
-            const res = await fetch(`http://120.79.60.68:5001/api/parse?url=${encodeURIComponent(url)}`);
+            const res = await fetch(`httpsss://120.79.60.68:5001/api/parse?url=${encodeURIComponent(url)}`);
             let data = await res.text();
             try {
                 data = JSON.parse(data);
