@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icons/icon-512x512.png" />
+    <title>X媒体下载器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f2f4f8;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .top-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .top-bar input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .top-bar button {
+            border: 2px solid #4a90e2;
+            padding: 10px 16px;
+            font-size: 16px;
+            border-radius: 4px;
+            background: #4a90e2;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .top-bar button:active {
+            border: 2px solid #061321;
+        }
+
+        .top-bar button:hover {
+            background: #357ab8;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 15px;
+            border: 1px solid #4a90e2;
+            border-radius: 4px;
+            background: #fff;
+            color: #4a90e2;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .action-buttons button:hover {
+            background: #4a90e2;
+            color: #fff;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 6px;
+        }
+
+        .media-card {
+            aspect-ratio: 3 / 5;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: #000;
+        }
+
+        .media-card img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .media-card .overlay-bottom {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: end;
+            font-size: 20px;
+        }
+
+        .media-card .overlay-top {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 20px;
+        }
+
+        .media-card .download-btn {
+            z-index: 1;
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 4px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 50px;
+            text-align: center;
+            line-height: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        <input id="urlInput" type="text" placeholder="输入链接..." />
+        <button id="parseBtn">解析链接</button>
+    </div>
+    <div class="action-buttons">
+        <button id="pasteBtn">粘贴链接</button>
+        <button id="clearBtn">清空链接</button>
+        <button id="downloadAllBtn">下载媒体</button>
+    </div>
+    <div id="mediaGrid" class="media-grid"></div>
+
+    <script>
+        const urlInput = document.getElementById('urlInput');
+        const parseBtn = document.getElementById('parseBtn');
+        const pasteBtn = document.getElementById('pasteBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const mediaGrid = document.getElementById('mediaGrid');
+        let mediaList = [];
+
+        // 解析链接
+        parseBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            if (!url) return alert('请输入链接');
+            const res = await fetch(`/api/parse?url=${encodeURIComponent(url)}`);
+            let data = await res.text();
+            try {
+                data = JSON.parse(data);
+                mediaList = data.slice(0, 4);
+                renderMedia(mediaList);
+            } catch (err) {
+                console.error(err);
+                alert(data);
+            }
+        });
+
+        // 渲染媒体缩略图
+        function renderMedia(list) {
+            mediaGrid.innerHTML = '';
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                const img = document.createElement('img');
+                img.src = item.thumb;
+                card.appendChild(img);
+
+                // 视频时长
+                if (item.type === 'video' && item.duration) {
+                    const top = document.createElement('div');
+                    top.className = 'overlay-top';
+                    top.textContent = item.duration;
+                    card.appendChild(top);
+                }
+                // 下载按钮
+                const dlBtn = document.createElement('div');
+                dlBtn.className = 'download-btn';
+                dlBtn.innerHTML = '⬇';
+                dlBtn.title = '下载';
+                dlBtn.onclick = () => downloadMedia(item.url);
+                card.appendChild(dlBtn);
+
+                // 底部信息
+                const bottom = document.createElement('div');
+                bottom.className = 'overlay-bottom';
+                const infoLeft = document.createElement('span');
+                infoLeft.textContent = item.resolution;
+                const infoRight = document.createElement('span');
+                infoRight.textContent = item.type === 'video' ? item.size || '' : '';
+                bottom.appendChild(infoLeft);
+                bottom.appendChild(infoRight);
+                card.appendChild(bottom);
+
+                mediaGrid.appendChild(card);
+            });
+        }
+
+        // 下载单个
+        async function downloadMedia(url) {
+            const response = await fetch(url, { mode: 'cors' }); // 有些服务器不允许
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = "";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+        }
+
+        // 下载所有
+        downloadAllBtn.addEventListener('click', () => {
+            mediaList.forEach(item => downloadMedia(item.url));
+        });
+
+        // 粘贴
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                urlInput.value = text;
+            } catch (err) {
+                console.error(err);
+                alert('无法粘贴，请检查权限');
+            }
+        });
+
+        // 清空
+        clearBtn.addEventListener('click', () => {
+            urlInput.value = '';
+        });
+    </script>
+
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/service-worker.js");
+        }
+    </script>
+</body>
+
+</html>
