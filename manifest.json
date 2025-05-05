@@ -2,18 +2,18 @@
   "name": "X媒体下载器",
   "short_name": "X媒体下载器",
   "description": "用于下载X推文的媒体文件的应用",
-  "start_url": "/",
+  "start_url": "/Xdownloader",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ff7f50",
   "icons": [
     {
-      "src": "icons/icon-192x192.png",
+      "src": "/Xdownloadericons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512x512.png",
+      "src": "/Xdownloadericons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

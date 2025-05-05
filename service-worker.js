@@ -2,11 +2,11 @@ const VERSION = "v1";
 const CACHE_NAME = `period-tracker-${VERSION}`;
 
 const APP_STATIC_RESOURCES = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png",
+  "/Xdownloader",
+  "/Xdownloader/index.html",
+  "/Xdownloader/manifest.json",
+  "/Xdownloader/icons/icon-192x192.png",
+  "/Xdownloader/icons/icon-512x512.png",
 ];
 
 self.addEventListener("install", (event) => {

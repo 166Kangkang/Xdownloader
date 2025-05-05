@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" href="/icons/icon-512x512.png" />
+    <link rel="manifest" href="/Xdownloader/manifest.json" />
+    <link rel="icon" href="/Xdownloader/icons/icon-512x512.png" />
     <title>X媒体下载器</title>
     <style>
         body {
@@ -163,7 +163,7 @@
         parseBtn.addEventListener('click', async () => {
             const url = urlInput.value.trim();
             if (!url) return alert('请输入链接');
-            const res = await fetch(`/api/parse?url=${encodeURIComponent(url)}`);
+            const res = await fetch(`http://120.79.60.68:5001/api/parse?url=${encodeURIComponent(url)}`);
             let data = await res.text();
             try {
                 data = JSON.parse(data);
@@ -254,7 +254,7 @@
 
     <script>
         if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("/service-worker.js");
+            navigator.serviceWorker.register("/Xdownloader/service-worker.js");
         }
     </script>
 </body>
